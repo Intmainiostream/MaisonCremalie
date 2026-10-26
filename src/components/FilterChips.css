@@ -1,0 +1,63 @@
+.chips {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--count), 1fr);
+  width: 100%;
+  max-width: 440px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-white);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Sliding pill behind the active chip */
+.chips-indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: calc((100% - 12px) / var(--count));
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, #d43f5a, var(--color-strawberry-deep));
+  box-shadow: var(--shadow-glow);
+  transform: translateX(calc(var(--active) * 100%));
+  transition: transform 0.5s var(--ease-bounce);
+}
+
+.chip {
+  position: relative;
+  min-height: 44px;
+  padding: 0.6rem 0.5rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  background: none;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    transform 0.3s var(--ease-bounce);
+}
+
+.chip:not(.is-active):hover {
+  color: var(--color-strawberry-deep);
+}
+
+.chip.is-active {
+  color: var(--color-white);
+}
+
+.chip:active {
+  transform: scale(0.92);
+}
+
+@media (min-width: 480px) {
+  .chip {
+    padding-inline: 1rem;
+    font-size: 1rem;
+  }
+}

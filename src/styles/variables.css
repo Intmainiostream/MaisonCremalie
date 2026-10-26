@@ -1,0 +1,41 @@
+:root {
+  /* Brand colors */
+  --color-cream: #fff6e9;
+  --color-pink: #f9c6d4;
+  --color-pink-light: #fde3ea;
+  --color-strawberry: #e8556d;
+  --color-strawberry-deep: #c73853; /* small text and buttons, keeps contrast readable */
+  --color-berry: #7a2e45;
+  --color-berry-soft: #9b5a6d;
+  --color-white: #ffffff;
+
+  /* Flavor tints */
+  --tint-rose: #f7b8cb;
+  --tint-lavender: #cdb9f0;
+  --tint-vanilla: #f7dfa3;
+  --tint-raspberry: #f08aa6;
+  --tint-lychee: #f6cbbb;
+  --tint-strawberry: #f59aae;
+
+  /* Fonts */
+  --font-display: 'Modak', 'Sniglet', system-ui, sans-serif;
+  --font-heading: 'Sniglet', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  /* Shapes */
+  --radius-sm: 16px;
+  --radius-md: 28px;
+  --radius-lg: 40px;
+  --radius-pill: 999px;
+
+  /* Layered shadows */
+  --shadow-soft: 0 1px 2px rgba(122, 46, 69, 0.05), 0 8px 24px -8px rgba(122, 46, 69, 0.16);
+  --shadow-lift: 0 2px 6px rgba(122, 46, 69, 0.06), 0 24px 48px -16px rgba(232, 85, 109, 0.4);
+  --shadow-glow: 0 10px 28px -8px rgba(199, 56, 83, 0.55);
+
+  /* Motion */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --nav-offset: 84px;
+}

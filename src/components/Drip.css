@@ -1,0 +1,14 @@
+.drip {
+  display: block;
+  width: 100%;
+  height: clamp(36px, 6vw, 80px);
+}
+
+/* Overlap by 1px so no hairline gap shows next to the section */
+.drip--scallop {
+  margin-bottom: -1px;
+}
+
+.drip--drip {
+  margin-top: -1px;
+}

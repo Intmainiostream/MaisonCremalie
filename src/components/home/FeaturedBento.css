@@ -1,0 +1,41 @@
+.bento {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.bento-item {
+  display: flex;
+}
+
+.bento-item > * {
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .bento {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bento-item:first-child,
+  .bento-item:last-child {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 960px) {
+  .bento {
+    grid-template-columns: 1.25fr 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .bento-item:first-child {
+    grid-column: auto;
+    grid-row: span 2;
+  }
+}
+
+.featured-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
