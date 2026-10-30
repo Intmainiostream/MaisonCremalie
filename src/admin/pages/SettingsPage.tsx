@@ -1,33 +1,34 @@
 import { useState, type FormEvent } from 'react'
 import { apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../auth/useAdminAuth'
-import AdminError from '../components/AdminError'
 import Field from '../components/Field'
 import PasswordInput from '../components/PasswordInput'
 import { errorMessage, fieldErrors } from '../errors'
+import { useFeedback } from '../feedback/useFeedback'
 
 const MIN_LENGTH = 8
 
 function SettingsPage() {
   const { admin } = useAdminAuth()
+  const feedback = useFeedback()
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [formError, setFormError] = useState('')
-  const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setFormError('')
-    setSuccess('')
     const found: Record<string, string> = {}
     if (!currentPassword) found['currentPassword'] = 'Please enter your current password.'
     if (newPassword.length < MIN_LENGTH) found['newPassword'] = `Use at least ${MIN_LENGTH} characters.`
     if (confirm !== newPassword) found['confirm'] = "The new passwords don't match."
     setErrors(found)
-    if (Object.keys(found).length) return
+    const firstProblem = Object.values(found)[0]
+    if (firstProblem) {
+      feedback.error('Please check the form', firstProblem)
+      return
+    }
 
     setSaving(true)
     try {
@@ -35,11 +36,11 @@ function SettingsPage() {
       setCurrentPassword('')
       setNewPassword('')
       setConfirm('')
-      setSuccess('Password changed! Other devices will need to log in again.')
+      feedback.success('Password changed!', 'Other devices will need to log in again.')
     } catch (err) {
       const fields = fieldErrors(err)
       setErrors(fields)
-      if (!Object.keys(fields).length) setFormError(errorMessage(err))
+      feedback.error("Couldn't change your password", Object.values(fields)[0] ?? errorMessage(err))
     } finally {
       setSaving(false)
     }
@@ -58,12 +59,6 @@ function SettingsPage() {
 
       <form className="admin-card admin-form admin-form--narrow" onSubmit={handleSubmit} noValidate>
         <h2 className="admin-card-title">Change password</h2>
-        {success && (
-          <p className="admin-alert admin-alert--success" role="status">
-            {success}
-          </p>
-        )}
-        {formError && <AdminError message={formError} />}
 
         <Field id="settings-currentPassword" label="Current password" error={errors['currentPassword']}>
           <PasswordInput

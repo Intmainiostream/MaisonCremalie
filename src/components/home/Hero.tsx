@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import Mascot from '../illustrations/Mascot'
 import Macaron from '../illustrations/Macaron'
 import CreamPuff from '../illustrations/CreamPuff'
 import Sparkle from '../illustrations/Sparkle'
@@ -32,7 +31,14 @@ function Hero() {
 
       <div className="hero-art">
         <div className="hero-glow" aria-hidden="true" />
-        <Mascot className="hero-mascot" title="Crémi, our cream swirl mascot, smiling with a strawberry on top" />
+        <span className="hero-mascot-shadow" aria-hidden="true" />
+        <img
+          src="/brand/logo-icon-640.png"
+          alt="Our cream puff mascot, smiling with a strawberry on top"
+          className="hero-mascot"
+          width="640"
+          height="640"
+        />
         <Macaron color="var(--tint-rose)" className="hero-float hero-float--1" />
         <CreamPuff color="var(--tint-strawberry)" className="hero-float hero-float--2" />
         <Macaron color="var(--tint-lavender)" className="hero-float hero-float--3" />

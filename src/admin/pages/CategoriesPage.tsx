@@ -1,12 +1,18 @@
 import { useState, type FormEvent } from 'react'
 import { useApi } from '../../hooks/useApi'
-import { apiRequest, ApiError } from '../../lib/api'
+import { apiRequest } from '../../lib/api'
 import type { Category } from '../../types/product'
 import AdminError from '../components/AdminError'
 import Field from '../components/Field'
 import Modal from '../components/Modal'
 import { PlusIcon, TrashIcon } from '../components/icons'
 import { errorMessage, fieldErrors } from '../errors'
+import { useFeedback } from '../feedback/useFeedback'
+
+// Field errors stay under the inputs; the popup gives the first one so the admin knows what to fix
+function firstMessage(fields: Record<string, string>, err: unknown): string {
+  return Object.values(fields)[0] ?? errorMessage(err)
+}
 
 interface CategoryRowProps {
   category: Category
@@ -15,6 +21,7 @@ interface CategoryRowProps {
 }
 
 function CategoryRow({ category, onSaved, onDelete }: CategoryRowProps) {
+  const feedback = useFeedback()
   const [name, setName] = useState(category.name)
   const [slug, setSlug] = useState(category.slug)
   const [sortOrder, setSortOrder] = useState(String(category.sortOrder))
@@ -26,11 +33,13 @@ function CategoryRow({ category, onSaved, onDelete }: CategoryRowProps) {
     setSaving(true)
     setErrors({})
     try {
-      await apiRequest('PATCH', `/api/admin/categories/${category.id}`, { name, slug, sortOrder })
+      const saved = await apiRequest<Category>('PATCH', `/api/admin/categories/${category.id}`, { name, slug, sortOrder })
+      feedback.success('Saved!', `${saved.name} was updated.`)
       onSaved()
     } catch (err) {
       const fields = fieldErrors(err)
-      setErrors(Object.keys(fields).length ? fields : { name: errorMessage(err) })
+      setErrors(fields)
+      feedback.error("Couldn't save the category", firstMessage(fields, err))
       setSaving(false)
     }
   }
@@ -86,30 +95,28 @@ function CategoryRow({ category, onSaved, onDelete }: CategoryRowProps) {
 
 function CategoriesPage() {
   const categories = useApi<Category[]>('/api/admin/categories')
+  const feedback = useFeedback()
   const [newName, setNewName] = useState('')
   const [newSlug, setNewSlug] = useState('')
   const [addErrors, setAddErrors] = useState<Record<string, string>>({})
   const [adding, setAdding] = useState(false)
-  const [message, setMessage] = useState('')
   const [toDelete, setToDelete] = useState<Category | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState('')
-  const [deleted, setDeleted] = useState<string | null>(null)
 
   async function handleAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setAdding(true)
     setAddErrors({})
-    setMessage('')
     try {
       const created = await apiRequest<Category>('POST', '/api/admin/categories', { name: newName, slug: newSlug })
       setNewName('')
       setNewSlug('')
-      setMessage(`${created.name} was added.`)
       categories.retry()
+      feedback.success('Saved!', `${created.name} was added.`)
     } catch (err) {
       const fields = fieldErrors(err)
-      setAddErrors(Object.keys(fields).length ? fields : { name: errorMessage(err) })
+      setAddErrors(fields)
+      feedback.error("Couldn't add the category", firstMessage(fields, err))
     } finally {
       setAdding(false)
     }
@@ -120,20 +127,15 @@ function CategoriesPage() {
     setDeleting(true)
     try {
       await apiRequest('DELETE', `/api/admin/categories/${toDelete.id}`)
-      setDeleted(toDelete.name)
-      setToDelete(null)
       categories.retry()
+      feedback.success('Deleted', `${toDelete.name} was removed.`)
     } catch (err) {
-      // 409: the category still has products; show the server's friendly explanation in the modal
-      setDeleteError(err instanceof ApiError ? err.message : errorMessage(err))
+      // 409 when it still has products: the server's message explains what to do
+      feedback.error("This category can't be deleted yet", errorMessage(err))
     } finally {
+      setToDelete(null)
       setDeleting(false)
     }
-  }
-
-  function closeDelete() {
-    setToDelete(null)
-    setDeleteError('')
   }
 
   return (
@@ -156,12 +158,6 @@ function CategoriesPage() {
           <PlusIcon /> {adding ? 'Adding…' : 'Add category'}
         </button>
       </form>
-
-      {message && (
-        <p className="admin-alert admin-alert--success" role="status">
-          {message}
-        </p>
-      )}
 
       {categories.error ? (
         <AdminError message={categories.error} onRetry={categories.retry} />
@@ -201,42 +197,22 @@ function CategoriesPage() {
 
       <Modal
         open={toDelete !== null}
-        title={deleteError ? "This category can't be deleted yet" : 'Delete this category?'}
+        title="Delete this category?"
         tone="danger"
-        onClose={closeDelete}
+        onClose={() => !deleting && setToDelete(null)}
         actions={
-          deleteError ? (
-            <button type="button" className="admin-btn admin-btn--primary" onClick={closeDelete}>
-              OK
+          <>
+            <button type="button" className="admin-btn" onClick={() => setToDelete(null)} disabled={deleting}>
+              Keep it
             </button>
-          ) : (
-            <>
-              <button type="button" className="admin-btn" onClick={closeDelete} disabled={deleting}>
-                Keep it
-              </button>
-              <button type="button" className="admin-btn admin-btn--danger" onClick={confirmDelete} disabled={deleting}>
-                {deleting ? 'Deleting…' : 'Yes, delete'}
-              </button>
-            </>
-          )
-        }
-      >
-        <p>{deleteError || <><strong>{toDelete?.name}</strong> will be removed from the shop's filters.</>}</p>
-      </Modal>
-
-      <Modal
-        open={deleted !== null}
-        title="Category deleted"
-        tone="success"
-        onClose={() => setDeleted(null)}
-        actions={
-          <button type="button" className="admin-btn admin-btn--primary" onClick={() => setDeleted(null)}>
-            OK
-          </button>
+            <button type="button" className="admin-btn admin-btn--danger" onClick={confirmDelete} disabled={deleting}>
+              {deleting ? 'Deleting…' : 'Yes, delete'}
+            </button>
+          </>
         }
       >
         <p>
-          <strong>{deleted}</strong> is gone.
+          <strong>{toDelete?.name}</strong> will be removed from the shop's filters.
         </p>
       </Modal>
     </>

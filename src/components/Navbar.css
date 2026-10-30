@@ -37,13 +37,14 @@
   color: var(--color-strawberry);
 }
 
-.navbar-logo svg {
-  width: 18px;
-  height: 18px;
+.navbar-logo-icon {
+  width: 36px;
+  height: 36px;
+  margin-right: 0.15rem;
   transition: transform 0.5s var(--ease-bounce);
 }
 
-.navbar-logo:hover svg {
+.navbar-logo:hover .navbar-logo-icon {
   transform: scale(1.3) rotate(-12deg);
 }
 
@@ -60,7 +61,7 @@
   padding: 0.55rem 1.1rem;
   border-radius: var(--radius-pill);
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.95rem;
   transition:
     background 0.25s ease,
@@ -86,8 +87,9 @@
     padding-left: 1rem;
   }
 
-  .navbar-logo svg {
-    display: none;
+  .navbar-logo-icon {
+    width: 30px;
+    height: 30px;
   }
 
   .navbar-links a {

@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ProductIllustration from '../../components/ProductIllustration'
 import { useApi } from '../../hooks/useApi'
 import { apiRequest, ApiError } from '../../lib/api'
@@ -12,6 +12,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import Switch from '../components/Switch'
 import { UploadIcon } from '../components/icons'
 import { errorMessage, fieldErrors } from '../errors'
+import { useFeedback } from '../feedback/useFeedback'
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024
 
@@ -63,22 +64,19 @@ function EditProduct({ id }: { id: number }) {
 
 function ProductForm({ product }: { product?: Product }) {
   const navigate = useNavigate()
-  const location = useLocation()
+  const feedback = useFeedback()
   const categories = useApi<Category[]>('/api/admin/categories')
 
   const [values, setValues] = useState(() => toValues(product))
   // Editing keeps the saved slug; a new product follows the name until the slug is typed by hand
   const [slugEdited, setSlugEdited] = useState(Boolean(product))
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [formError, setFormError] = useState('')
-  const [success, setSuccess] = useState(() => (location.state as { flash?: string } | null)?.flash ?? '')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
 
   function update<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }))
     setErrors((e) => ({ ...e, [key]: '' }))
-    setSuccess('')
   }
 
   function handleName(name: string) {
@@ -91,7 +89,7 @@ function ProductForm({ product }: { product?: Product }) {
     event.target.value = ''
     if (!file) return
     if (file.size > MAX_IMAGE_BYTES) {
-      setErrors((e) => ({ ...e, imageUrl: 'Images must be 2 MB or smaller.' }))
+      feedback.error('That photo is too big', 'Please choose an image that is 2 MB or smaller.')
       return
     }
     setUploading(true)
@@ -100,8 +98,9 @@ function ProductForm({ product }: { product?: Product }) {
     try {
       const { url } = await apiRequest<{ url: string }>('POST', '/api/admin/uploads', form)
       update('imageUrl', url)
+      feedback.success('Photo uploaded!', 'Save the product to keep it.')
     } catch (err) {
-      setErrors((e) => ({ ...e, imageUrl: errorMessage(err) }))
+      feedback.error("Couldn't upload the photo", errorMessage(err))
     } finally {
       setUploading(false)
     }
@@ -110,22 +109,22 @@ function ProductForm({ product }: { product?: Product }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSaving(true)
-    setFormError('')
-    setSuccess('')
     const body = { ...values, categoryId: values.categoryId ? Number(values.categoryId) : null }
     try {
-      if (product) {
-        const saved = await apiRequest<Product>('PATCH', `/api/admin/products/${product.id}`, body)
-        setValues(toValues(saved))
-        setSuccess('Changes saved! The shop shows them on the next page load.')
-      } else {
-        const created = await apiRequest<Product>('POST', '/api/admin/products', body)
-        navigate(`/admin/products/${created.id}`, { replace: true, state: { flash: `${created.name} was added to the shop!` } })
-      }
+      const saved = product
+        ? await apiRequest<Product>('PATCH', `/api/admin/products/${product.id}`, body)
+        : await apiRequest<Product>('POST', '/api/admin/products', body)
+      // Stays "saving" until the popup closes and we're back on the list
+      feedback.success('Saved!', product ? `${saved.name} is up to date.` : `${saved.name} was added to the shop.`, {
+        onClose: () => navigate('/admin/products'),
+      })
     } catch (err) {
       setErrors(fieldErrors(err))
-      setFormError(err instanceof ApiError && err.fields ? 'Please fix the fields marked below.' : errorMessage(err))
-    } finally {
+      if (err instanceof ApiError && err.fields) {
+        feedback.error('Please check the form', 'Some fields need a small fix. They are marked in red.')
+      } else {
+        feedback.error("Couldn't save", errorMessage(err))
+      }
       setSaving(false)
     }
   }
@@ -144,13 +143,6 @@ function ProductForm({ product }: { product?: Product }) {
           <p>{product ? 'Update the details and save.' : 'Fill in the details for a new sweet.'}</p>
         </div>
       </header>
-
-      {success && (
-        <p className="admin-alert admin-alert--success" role="status">
-          {success}
-        </p>
-      )}
-      {formError && <AdminError message={formError} />}
 
       <form className="admin-form-grid" onSubmit={handleSubmit} noValidate>
         <div className="admin-card admin-form">
@@ -259,9 +251,7 @@ function ProductForm({ product }: { product?: Product }) {
             )}
           </div>
           {errors['imageUrl'] ? (
-            <p className="admin-field-error" role="alert">
-              {errors['imageUrl']}
-            </p>
+            <p className="admin-field-error">{errors['imageUrl']}</p>
           ) : (
             <p className="admin-field-hint">JPG, PNG or WebP, up to 2 MB. Saved when you save the product.</p>
           )}

@@ -11,19 +11,24 @@ import Modal from '../components/Modal'
 import Switch from '../components/Switch'
 import { PlusIcon, TrashIcon } from '../components/icons'
 import { errorMessage } from '../errors'
+import { useFeedback } from '../feedback/useFeedback'
 
 type Flag = 'featured' | 'available'
+
+function toggleMessage(name: string, flag: Flag, on: boolean): string {
+  if (flag === 'featured') return on ? `${name} is now featured.` : `${name} is no longer featured.`
+  return on ? `${name} is available again.` : `${name} is marked as sold out.`
+}
 
 function ProductsPage() {
   const products = useApi<Product[]>('/api/admin/products')
   const categories = useApi<Category[]>('/api/admin/categories')
   const [search, setSearch] = useState('')
   const [categoryId, setCategoryId] = useState('all')
+  const feedback = useFeedback()
   const [pending, setPending] = useState<string | null>(null)
-  const [actionError, setActionError] = useState('')
   const [toDelete, setToDelete] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [deleted, setDeleted] = useState<string | null>(null)
 
   const query = search.trim().toLowerCase()
   const visible = (products.data ?? []).filter(
@@ -34,12 +39,12 @@ function ProductsPage() {
 
   async function toggle(product: Product, flag: Flag) {
     setPending(`${product.id}-${flag}`)
-    setActionError('')
     try {
       await apiRequest('PATCH', `/api/admin/products/${product.id}`, { [flag]: !product[flag] })
       products.retry()
+      feedback.success('Saved!', toggleMessage(product.name, flag, !product[flag]))
     } catch (err) {
-      setActionError(errorMessage(err))
+      feedback.error("Couldn't save", errorMessage(err))
     } finally {
       setPending(null)
     }
@@ -50,12 +55,12 @@ function ProductsPage() {
     setDeleting(true)
     try {
       await apiRequest('DELETE', `/api/admin/products/${toDelete.id}`)
-      setDeleted(toDelete.name)
       setToDelete(null)
       products.retry()
+      feedback.success('Deleted', `${toDelete.name} was removed from the shop.`)
     } catch (err) {
-      setActionError(errorMessage(err))
       setToDelete(null)
+      feedback.error("Couldn't delete", errorMessage(err))
     } finally {
       setDeleting(false)
     }
@@ -192,7 +197,6 @@ function ProductsPage() {
         </select>
       </div>
 
-      {actionError && <AdminError message={actionError} />}
       {renderBody()}
 
       <Modal
@@ -213,22 +217,6 @@ function ProductsPage() {
       >
         <p>
           <strong>{toDelete?.name}</strong> will be removed from the shop, along with its photo. This can't be undone.
-        </p>
-      </Modal>
-
-      <Modal
-        open={deleted !== null}
-        title="Product deleted"
-        tone="success"
-        onClose={() => setDeleted(null)}
-        actions={
-          <button type="button" className="admin-btn admin-btn--primary" onClick={() => setDeleted(null)}>
-            OK
-          </button>
-        }
-      >
-        <p>
-          <strong>{deleted}</strong> is no longer in the shop.
         </p>
       </Modal>
     </>

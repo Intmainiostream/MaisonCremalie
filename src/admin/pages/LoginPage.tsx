@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
-import Mascot from '../../components/illustrations/Mascot'
 import { ApiError } from '../../lib/api'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import Field from '../components/Field'
@@ -45,8 +44,13 @@ function LoginPage() {
   return (
     <div className="login">
       <form className="login-card" onSubmit={handleSubmit} noValidate>
-        <Mascot className="login-mascot" />
-        <p className="login-brand">Maison Crémalie</p>
+        <img
+          src="/brand/logo-full-720.png"
+          alt="Maison Crémalie"
+          className="login-logo"
+          width="280"
+          height="140"
+        />
         <h1 className="login-title">Welcome back, chef!</h1>
         <p className="login-lead">Log in to manage your sweets.</p>
 

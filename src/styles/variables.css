@@ -18,8 +18,8 @@
   --tint-strawberry: #f59aae;
 
   /* Fonts */
-  --font-display: 'Modak', 'Sniglet', system-ui, sans-serif;
-  --font-heading: 'Sniglet', system-ui, sans-serif;
+  --font-display: 'Modak', 'Nunito', system-ui, sans-serif; /* logo and big headings only, weight 400 */
+  --font-heading: 'Nunito', system-ui, sans-serif; /* names, prices, buttons, nav: weight 700 */
   --font-body: 'Nunito', system-ui, sans-serif;
 
   /* Shapes */

@@ -23,7 +23,7 @@ h2,
 h3 {
   margin: 0;
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.15;
 }
 
@@ -185,7 +185,7 @@ input {
   margin-bottom: 1rem;
   padding: 0.4rem 1rem;
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -227,7 +227,7 @@ input {
   border: none;
   border-radius: var(--radius-pill);
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.05rem;
   cursor: pointer;
   transition:

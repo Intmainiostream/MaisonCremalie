@@ -20,6 +20,13 @@ function Footer() {
         <div className="container footer-grid">
           <div className="footer-brand">
             <Link to="/" className="footer-logo">
+              <img
+                src="/brand/logo-icon-160.png"
+                alt="Cream puff mascot logo"
+                className="footer-logo-icon"
+                width="52"
+                height="52"
+              />
               Maison Crémalie
             </Link>
             <p>Whipped with love, one swirl at a time.</p>
@@ -61,7 +68,6 @@ function Footer() {
 
         <div className="container footer-bottom">
           <p>© {new Date().getFullYear()} Maison Crémalie</p>
-          <p>Made with cream, strawberries and code.</p>
         </div>
       </div>
     </footer>

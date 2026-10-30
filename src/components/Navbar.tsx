@@ -1,5 +1,4 @@
 import { Link, NavLink } from 'react-router-dom'
-import Heart from './illustrations/Heart'
 import './Navbar.css'
 
 function Navbar() {
@@ -7,7 +6,13 @@ function Navbar() {
     <header className="navbar">
       <nav className="navbar-pill" aria-label="Main">
         <Link to="/" className="navbar-logo">
-          <Heart />
+          <img
+            src="/brand/logo-icon-160.png"
+            alt="Cream puff mascot logo"
+            className="navbar-logo-icon"
+            width="36"
+            height="36"
+          />
           Maison Crémalie
         </Link>
         <ul className="navbar-links">

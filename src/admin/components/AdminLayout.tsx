@@ -15,7 +15,17 @@ function AdminLayout() {
     <div className="admin">
       <aside className="admin-sidebar">
         <Link to="/admin/products" className="admin-brand">
-          Maison Crémalie <span>Admin</span>
+          <span className="admin-brand-badge">Admin</span>
+          <span className="admin-brand-name">
+            <img
+              src="/brand/logo-icon-160.png"
+              alt="Cream puff mascot logo"
+              className="admin-brand-icon"
+              width="30"
+              height="30"
+            />
+            Maison Crémalie
+          </span>
         </Link>
         <nav className="admin-nav" aria-label="Admin">
           <NavLink to="/admin/products">
